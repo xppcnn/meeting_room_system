@@ -15,7 +15,7 @@ model User {
   username     String   @db.VarChar(50)
   password     String   @db.VarChar(50)
   nick_name    String?  @db.VarChar(50)
-  email        String?  @db.VarChar(50)
+  email        String   @unique @db.VarChar(50)
   head_pic     String?  @db.VarChar(100)
   phone_number String?  @db.VarChar(20)
   is_frozen    Boolean  @default(false)
@@ -26,8 +26,8 @@ model User {
 }
 
 model Role {
-  id   Int    @id @default(autoincrement())
-  name String @db.VarChar(20)
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(20)
   users       User[]       @relation("user_roles")
   permissions Permission[] @relation("role_permissions")
 }

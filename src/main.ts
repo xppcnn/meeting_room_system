@@ -5,13 +5,17 @@ import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { ApiTransformInterceptor } from './common/interceptors/api-transform.interceptor';
+import { PostInterceptor } from './common/interceptors/post.interceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
   app.useStaticAssets(join(__dirname, '..', 'public'), { prefix: '/static' });
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalInterceptors(new ApiTransformInterceptor(new Reflector()));
+  app.useGlobalInterceptors(
+    new ApiTransformInterceptor(new Reflector()),
+    new PostInterceptor(),
+  );
   const configService = app.get(ConfigService);
   const config = new DocumentBuilder()
     .setTitle('meeting_room_system API')
