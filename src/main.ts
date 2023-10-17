@@ -3,7 +3,12 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  ValidationError,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiTransformInterceptor } from './common/interceptors/api-transform.interceptor';
 import { PostInterceptor } from './common/interceptors/post.interceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -14,7 +19,22 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
   app.useStaticAssets(join(__dirname, '..', 'public'), { prefix: '/static' });
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+      exceptionFactory: (errors: ValidationError[]) => {
+        return new BadRequestException(
+          errors
+            .filter((item) => !!item.constraints)
+            .flatMap((item) => Object.values(item.constraints))
+            .join('; '),
+        );
+      },
+    }),
+  );
   app.useGlobalInterceptors(
     new ApiTransformInterceptor(new Reflector()),
     new PostInterceptor(),
