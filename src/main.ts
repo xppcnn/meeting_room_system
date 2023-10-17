@@ -7,6 +7,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { ApiTransformInterceptor } from './common/interceptors/api-transform.interceptor';
 import { PostInterceptor } from './common/interceptors/post.interceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { InvokeRecordInterceptor } from './common/interceptors/invoke-record.interceptor';
+import { ApiExceptionFilter } from './common/filters/api-exception.filter';
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
@@ -15,7 +18,9 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ApiTransformInterceptor(new Reflector()),
     new PostInterceptor(),
+    new InvokeRecordInterceptor(),
   );
+  app.useGlobalFilters(new ApiExceptionFilter());
   const configService = app.get(ConfigService);
   const config = new DocumentBuilder()
     .setTitle('meeting_room_system API')

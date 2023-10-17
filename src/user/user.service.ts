@@ -1,17 +1,13 @@
-import {
-  Injectable,
-  Logger,
-  Inject,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { md5 } from 'src/utils/utils';
-import { LoginDto } from './dto/login.dto';
-import { LoginVo, UserInfo } from './vo/login.vo';
+import { LoginDto, PasswordDto } from './dto/login.dto';
+import { LoginVo, UserDetailVo, UserInfo } from './vo/login.vo';
+import { UpdateUserDto } from './dto/user.dto';
+import { ApiException } from 'src/common/exceptions/api.exception';
 
 @Injectable()
 export class UserService {
@@ -23,18 +19,20 @@ export class UserService {
   @Inject(PrismaService)
   private readonly prisma: PrismaService;
   async register(user: RegisterDto) {
-    const captcha = await this.redisService.get(`captcha_${user.email}`);
+    const captcha = await this.redisService.get(
+      `register_captcha_${user.email}`,
+    );
     if (!captcha) {
-      throw new HttpException('验证码已失效', HttpStatus.BAD_REQUEST);
+      throw new ApiException(10002);
     }
 
     if (captcha !== user.captcha) {
-      throw new HttpException('验证码不正确', HttpStatus.BAD_REQUEST);
+      throw new ApiException(10003);
     }
 
     const foundUser = await this.findUserByName(user.username);
     if (foundUser) {
-      throw new HttpException('用户名重复', HttpStatus.BAD_REQUEST);
+      throw new ApiException(10001);
     }
 
     const userVo: Prisma.UserCreateInput = {
@@ -61,11 +59,11 @@ export class UserService {
       },
     });
     if (!user) {
-      throw new HttpException('该用户不存在', HttpStatus.BAD_REQUEST);
+      throw new ApiException(10005);
     }
 
     if (user.password !== md5(data.password)) {
-      throw new HttpException('该用户不存在', HttpStatus.BAD_REQUEST);
+      throw new ApiException(10004);
     }
 
     const vo = new LoginVo();
@@ -127,5 +125,63 @@ export class UserService {
       }, []),
     };
     return vo;
+  }
+
+  async findUserDetailById(userId: number): Promise<UserDetailVo> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    const vo = new UserDetailVo();
+    vo.id = user.id;
+    vo.userName = user.username;
+    vo.nickName = user.nick_name;
+    vo.phoneNumber = user.phone_number;
+    vo.email = user.email;
+    vo.isAdmin = user.is_admin;
+    vo.isFrozen = user.is_frozen;
+    vo.headPic = user.head_pic;
+    return vo;
+  }
+
+  async updatePassword(userId: number, data: PasswordDto) {
+    const captcha = await this.redisService.get(
+      `update_password_captcha_${data.email}`,
+    );
+    if (!captcha) {
+      throw new ApiException(10002);
+    }
+
+    if (captcha !== data.captcha) {
+      throw new ApiException(10003);
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    user.password = md5(data.password);
+
+    try {
+      await this.prisma.user.update({ data: user, where: { id: userId } });
+    } catch (error) {
+      this.logger.error(error, UserService);
+    }
+  }
+
+  async updateUser(userId: number, data: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (data.headPic) {
+      user.head_pic = data.headPic;
+    }
+    if (data.nickName) {
+      user.nick_name = data.nickName;
+    }
+    if (data.phoneNumber) {
+      user.phone_number = data.phoneNumber;
+    }
+
+    try {
+      await this.prisma.user.update({ data: user, where: { id: userId } });
+    } catch (error) {
+      this.logger.error(error, UserService);
+    }
   }
 }

@@ -5,15 +5,18 @@ import {
   Inject,
   Get,
   Query,
-  UnauthorizedException,
+  Put,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user.service';
 import { RegisterDto } from './dto/register.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { LoginDto } from './dto/login.dto';
+import { LoginDto, PasswordDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { Authorize, Permission } from 'src/common/decorators/common.decorator';
+import { UserInfo } from 'src/common/decorators/user.decorator';
+import { UpdateUserDto } from './dto/user.dto';
+import { ApiException } from 'src/common/exceptions/api.exception';
 
 @Controller('user')
 @ApiTags('user')
@@ -92,7 +95,7 @@ export class UserController {
         refreshToken,
       };
     } catch (error) {
-      throw new UnauthorizedException('token已失效， 请重新登录');
+      throw new ApiException(11002);
     }
   }
 
@@ -157,7 +160,28 @@ export class UserController {
         refreshToken,
       };
     } catch (error) {
-      throw new UnauthorizedException('token已失效， 请重新登录');
+      throw new ApiException(11002);
     }
+  }
+
+  @Get('info')
+  async info(@UserInfo('userId') userId: number) {
+    return await this.userService.findUserDetailById(userId);
+  }
+
+  @Put('updatePassword')
+  async updatePassword(
+    @Body() passwordDto: PasswordDto,
+    @UserInfo('userId') userId: number,
+  ) {
+    return await this.userService.updatePassword(userId, passwordDto);
+  }
+
+  @Put('update')
+  async updateInfo(
+    @Body() userInfo: UpdateUserDto,
+    @UserInfo('userId') userId: number,
+  ) {
+    return await this.userService.updateUser(userId, userInfo);
   }
 }

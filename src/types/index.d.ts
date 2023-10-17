@@ -12,3 +12,5 @@ declare module 'express' {
     user: JwtUserData;
   }
 }
+
+declare type UserKey = keyof JwtUserData;

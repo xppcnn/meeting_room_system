@@ -3,12 +3,12 @@ import {
   ExecutionContext,
   Inject,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { PERMISSION_KEY_METADATA } from '../contants/decorator.contant';
+import { ApiException } from '../exceptions/api.exception';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -35,7 +35,7 @@ export class PermissionGuard implements CanActivate {
       const curPerm = requirePermissions[i];
       const found = permissions.find((item) => item.code === curPerm);
       if (!found) {
-        throw new UnauthorizedException('您没有访问该接口的权限');
+        throw new ApiException(11003);
       }
     }
     return true;
