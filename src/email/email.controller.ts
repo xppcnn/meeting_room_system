@@ -1,7 +1,7 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Query } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { RedisService } from 'src/redis/redis.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Authorize } from 'src/common/decorators/common.decorator';
 
 @Controller('email')
@@ -12,6 +12,17 @@ export class EmailController {
   @Inject(RedisService)
   private readonly redisService: RedisService;
 
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    required: true,
+    description: '邮箱地址',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: '发送成功',
+    type: String,
+  })
   @Get('code')
   @Authorize()
   async sendEmailCode(@Query('address') address: string) {
@@ -30,6 +41,17 @@ export class EmailController {
     return 'success';
   }
 
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    required: true,
+    description: '邮箱地址',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: '发送成功',
+    type: String,
+  })
   @Get('update_password/captcha')
   @Authorize()
   async sendUpdatePasswordCode(@Query('address') address: string) {

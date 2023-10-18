@@ -1,61 +1,45 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Role, Permission } from '@prisma/client';
 
-export interface UserInfo {
+export class UserInfo {
+  @ApiProperty()
   id: number;
 
+  @ApiProperty()
   userName: string;
 
+  @ApiProperty()
   nickName: string;
 
+  @ApiProperty()
   email: string;
 
+  @ApiProperty()
   headPic: string;
 
+  @ApiProperty()
   phoneNumber: string;
 
+  @ApiProperty()
   isFrozen: boolean;
-
+  @ApiProperty()
   isAdmin: boolean;
 
+  @ApiProperty()
   roles: Role[];
 
+  @ApiProperty()
   permissions: Permission[];
 }
 
-export class LoginVo {
-  @ApiProperty()
-  userInfo: UserInfo;
-
+export class RefreshTokenVo {
   @ApiProperty()
   aceessToken: string;
 
   @ApiProperty()
   refreshToken: string;
 }
-
-export class UserDetailVo {
+export class LoginVo extends RefreshTokenVo {
   @ApiProperty()
-  id: number;
-
-  @ApiProperty()
-  username: string;
-
-  @ApiProperty()
-  nickName: string;
-
-  @ApiProperty()
-  email: string;
-
-  @ApiProperty()
-  headPic: string;
-
-  @ApiProperty()
-  phoneNumber: string;
-
-  @ApiProperty()
-  isFrozen?: boolean;
-
-  @ApiProperty()
-  isAdmin?: boolean;
+  userInfo: UserInfo;
 }

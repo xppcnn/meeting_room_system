@@ -5,7 +5,8 @@ import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { md5 } from 'src/utils/utils';
 import { LoginDto, PasswordDto } from './dto/login.dto';
-import { LoginVo, UserDetailVo, UserInfo } from './vo/login.vo';
+import { LoginVo, UserInfo } from './vo/login.vo';
+import { UserDetailVo } from './vo/user.vo';
 import { UpdateUserDto } from './dto/user.dto';
 import { ApiException } from 'src/common/exceptions/api.exception';
 
@@ -32,7 +33,7 @@ export class UserService {
 
     const foundUser = await this.findUserByName(user.username);
     if (foundUser) {
-      throw new ApiException(10001);
+      throw new ApiException(10007);
     }
 
     const userVo: Prisma.UserCreateInput = {
@@ -43,8 +44,10 @@ export class UserService {
     };
     try {
       await this.prisma.user.create({ data: userVo });
-      return userVo;
-    } catch (error) {}
+      return 'success';
+    } catch (error) {
+      throw new ApiException(10001);
+    }
   }
 
   async login(data: LoginDto, isAdmin: boolean) {
@@ -161,6 +164,7 @@ export class UserService {
 
     try {
       await this.prisma.user.update({ data: user, where: { id: userId } });
+      return 'success';
     } catch (error) {
       this.logger.error(error, UserService);
     }
@@ -180,6 +184,7 @@ export class UserService {
 
     try {
       await this.prisma.user.update({ data: user, where: { id: userId } });
+      return null;
     } catch (error) {
       this.logger.error(error, UserService);
     }
@@ -189,6 +194,7 @@ export class UserService {
     user.isFrozen = true;
     try {
       await this.prisma.user.update({ data: user, where: { id: userId } });
+      return null;
     } catch (error) {
       this.logger.error(error, UserService);
     }
