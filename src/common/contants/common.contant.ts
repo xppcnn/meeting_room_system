@@ -19,3 +19,24 @@ export class ResponseDto<T> {
     return new ResponseDto(200, data);
   }
 }
+
+export class PaginatedResponseDto<T> {
+  list: Array<T>;
+
+  @ApiProperty()
+  total: number;
+
+  @ApiProperty()
+  pageNum: number;
+
+  @ApiProperty()
+  pageSize: number;
+}
+
+export class PaginationParams {
+  @ApiProperty()
+  pageNum: number;
+
+  @ApiProperty()
+  pageSize: number;
+}

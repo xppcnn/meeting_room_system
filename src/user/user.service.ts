@@ -37,7 +37,7 @@ export class UserService {
 
     const userVo: Prisma.UserCreateInput = {
       password: md5(user.password),
-      nick_name: user.nickName,
+      nickName: user.nickName,
       username: user.username,
       email: user.email,
     };
@@ -49,7 +49,7 @@ export class UserService {
 
   async login(data: LoginDto, isAdmin: boolean) {
     const user = await this.prisma.user.findFirst({
-      where: { username: data.username, is_admin: isAdmin },
+      where: { username: data.username, isAdmin: isAdmin },
       include: {
         roles: {
           include: {
@@ -69,13 +69,13 @@ export class UserService {
     const vo = new LoginVo();
     vo.userInfo = {
       userName: user.username,
-      nickName: user.nick_name,
+      nickName: user.nickName,
       id: user.id,
       email: user.email,
-      headPic: user.head_pic,
-      phoneNumber: user.phone_number,
-      isFrozen: user.is_frozen,
-      isAdmin: user.is_admin,
+      headPic: user.headPic,
+      phoneNumber: user.phoneNumber,
+      isFrozen: user.isFrozen,
+      isAdmin: user.isAdmin,
       roles: user.roles.map((item) => ({ name: item.name, id: item.id })),
       permissions: user.roles.reduce((prev, cur) => {
         cur.permissions.forEach((permission) => {
@@ -107,13 +107,13 @@ export class UserService {
     });
     const vo: UserInfo = {
       userName: user.username,
-      nickName: user.nick_name,
+      nickName: user.nickName,
       id: user.id,
       email: user.email,
-      headPic: user.head_pic,
-      phoneNumber: user.phone_number,
-      isFrozen: user.is_frozen,
-      isAdmin: user.is_admin,
+      headPic: user.headPic,
+      phoneNumber: user.phoneNumber,
+      isFrozen: user.isFrozen,
+      isAdmin: user.isAdmin,
       roles: user.roles.map((item) => ({ name: item.name, id: item.id })),
       permissions: user.roles.reduce((prev, cur) => {
         cur.permissions.forEach((permission) => {
@@ -133,13 +133,13 @@ export class UserService {
     });
     const vo = new UserDetailVo();
     vo.id = user.id;
-    vo.userName = user.username;
-    vo.nickName = user.nick_name;
-    vo.phoneNumber = user.phone_number;
+    vo.username = user.username;
+    vo.nickName = user.nickName;
+    vo.phoneNumber = user.phoneNumber;
     vo.email = user.email;
-    vo.isAdmin = user.is_admin;
-    vo.isFrozen = user.is_frozen;
-    vo.headPic = user.head_pic;
+    vo.isAdmin = user.isAdmin;
+    vo.isFrozen = user.isFrozen;
+    vo.headPic = user.headPic;
     return vo;
   }
 
@@ -169,13 +169,13 @@ export class UserService {
   async updateUser(userId: number, data: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (data.headPic) {
-      user.head_pic = data.headPic;
+      user.headPic = data.headPic;
     }
     if (data.nickName) {
-      user.nick_name = data.nickName;
+      user.nickName = data.nickName;
     }
     if (data.phoneNumber) {
-      user.phone_number = data.phoneNumber;
+      user.phoneNumber = data.phoneNumber;
     }
 
     try {
@@ -183,5 +183,52 @@ export class UserService {
     } catch (error) {
       this.logger.error(error, UserService);
     }
+  }
+  async freezeUser(userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    user.isFrozen = true;
+    try {
+      await this.prisma.user.update({ data: user, where: { id: userId } });
+    } catch (error) {
+      this.logger.error(error, UserService);
+    }
+  }
+  async findUserList(
+    pageNum: number,
+    pageSize: number,
+    nickName: string,
+    username: string,
+    email: string,
+  ) {
+    const list = await this.prisma.user.findMany({
+      where: {
+        nickName: {
+          contains: nickName,
+        },
+        username: {
+          contains: username,
+        },
+        email: {
+          contains: email,
+        },
+      },
+      skip: (pageNum - 1) * pageSize,
+      take: pageSize,
+      select: {
+        id: true,
+        phoneNumber: true,
+        nickName: true,
+        email: true,
+        username: true,
+        headPic: true,
+        isAdmin: true,
+        isFrozen: true,
+      },
+    });
+    const total = await this.prisma.user.count();
+    return {
+      list,
+      total,
+    };
   }
 }

@@ -14,9 +14,9 @@ async function main() {
       username: 'zhangsan',
       password: md5('111111'),
       email: 'xxx@xx.com',
-      is_admin: true,
-      nick_name: '张三',
-      phone_number: '13233323333',
+      isAdmin: true,
+      nickName: '张三',
+      phoneNumber: '13233323333',
       roles: {
         create: {
           name: '管理员',
@@ -43,7 +43,7 @@ async function main() {
       username: 'lisi',
       password: md5('222222'),
       email: 'yy@yy.com',
-      nick_name: '李四',
+      nickName: '李四',
       roles: {
         create: {
           name: '普通用户',

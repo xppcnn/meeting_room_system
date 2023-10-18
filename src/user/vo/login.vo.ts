@@ -39,7 +39,7 @@ export class UserDetailVo {
   id: number;
 
   @ApiProperty()
-  userName: string;
+  username: string;
 
   @ApiProperty()
   nickName: string;
@@ -54,8 +54,8 @@ export class UserDetailVo {
   phoneNumber: string;
 
   @ApiProperty()
-  isFrozen: boolean;
+  isFrozen?: boolean;
 
   @ApiProperty()
-  isAdmin: boolean;
+  isAdmin?: boolean;
 }

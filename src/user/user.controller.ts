@@ -6,6 +6,7 @@ import {
   Get,
   Query,
   Put,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user.service';
@@ -13,10 +14,19 @@ import { RegisterDto } from './dto/register.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { LoginDto, PasswordDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
-import { Authorize, Permission } from 'src/common/decorators/common.decorator';
+import {
+  Authorize,
+  Pagination,
+  Permission,
+} from 'src/common/decorators/common.decorator';
 import { UserInfo } from 'src/common/decorators/user.decorator';
 import { UpdateUserDto } from './dto/user.dto';
 import { ApiException } from 'src/common/exceptions/api.exception';
+import {
+  PaginatedResponseDto,
+  PaginationParams,
+} from 'src/common/contants/common.contant';
+import { UserDetailVo } from './vo/login.vo';
 
 @Controller('user')
 @ApiTags('user')
@@ -183,5 +193,30 @@ export class UserController {
     @UserInfo('userId') userId: number,
   ) {
     return await this.userService.updateUser(userId, userInfo);
+  }
+
+  @Get('freeze')
+  async freeze(@Query('id', ParseIntPipe) userId: number) {
+    return await this.userService.freezeUser(userId);
+  }
+
+  @Get('list')
+  async list(
+    @Pagination() parmas: PaginationParams,
+    @Query('username') username: string,
+    @Query('nickName') nickName: string,
+    @Query('email') email: string,
+  ): Promise<PaginatedResponseDto<UserDetailVo>> {
+    const page = await this.userService.findUserList(
+      parmas.pageNum,
+      parmas.pageSize,
+      nickName,
+      username,
+      email,
+    );
+    return {
+      ...page,
+      ...parmas,
+    };
   }
 }

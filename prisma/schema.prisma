@@ -11,18 +11,18 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String   @db.VarChar(50)
-  password     String   @db.VarChar(50)
-  nick_name    String?  @db.VarChar(50)
-  email        String   @unique @db.VarChar(50)
-  head_pic     String?  @db.VarChar(100)
-  phone_number String?  @db.VarChar(20)
-  is_frozen    Boolean  @default(false)
-  is_admin     Boolean  @default(false)
-  create_time  DateTime @default(now())
-  update_time  DateTime @updatedAt
-  roles        Role[]   @relation("user_roles")
+  id          Int      @id @default(autoincrement())
+  username    String   @db.VarChar(50)
+  password    String   @db.VarChar(50)
+  nickName    String?  @map("nick_name") @db.VarChar(50)
+  email       String   @unique @db.VarChar(50)
+  headPic    String?  @db.VarChar(100)
+  phoneNumber String?  @map("phone_number") @db.VarChar(20)
+  isFrozen   Boolean  @default(false) @map("is_frozen")
+  isAdmin    Boolean  @default(false) @map("is_admin")
+  createTime DateTime @default(now()) @map("create_time")
+  updateTime DateTime @updatedAt @map("update_time")
+  roles       Role[]   @relation("user_roles")
 }
 
 model Role {
