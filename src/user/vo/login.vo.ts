@@ -34,7 +34,7 @@ export class UserInfo {
 
 export class RefreshTokenVo {
   @ApiProperty()
-  aceessToken: string;
+  accessToken: string;
 
   @ApiProperty()
   refreshToken: string;

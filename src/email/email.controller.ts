@@ -69,4 +69,33 @@ export class EmailController {
     // });
     return 'success';
   }
+
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    required: true,
+    description: '邮箱地址',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: '发送成功',
+    type: String,
+  })
+  @Get('reset_password/captcha')
+  @Authorize()
+  async sendResetPasswordCode(@Query('address') address: string) {
+    const code = Math.random().toString().slice(2, 8);
+
+    await this.redisService.set(
+      `reset_password_captcha_${address}`,
+      '123456',
+      5 * 60,
+    );
+    // await this.emailService.sendMail({
+    //   to: address,
+    //   subject: '重置密码验证码',
+    //   html: '<p>你的重置密码验证码是 123456</p>',
+    // });
+    return 'success';
+  }
 }

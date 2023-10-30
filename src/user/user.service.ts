@@ -33,7 +33,7 @@ export class UserService {
 
     const foundUser = await this.findUserByName(user.username);
     if (foundUser) {
-      throw new ApiException(10007);
+      throw new ApiException(10001);
     }
 
     const userVo: Prisma.UserCreateInput = {
@@ -46,7 +46,7 @@ export class UserService {
       await this.prisma.user.create({ data: userVo });
       return 'success';
     } catch (error) {
-      throw new ApiException(10001);
+      throw new ApiException(10007);
     }
   }
 
@@ -164,6 +164,35 @@ export class UserService {
 
     try {
       await this.prisma.user.update({ data: user, where: { id: userId } });
+      return 'success';
+    } catch (error) {
+      this.logger.error(error, UserService);
+    }
+  }
+
+  async resetPassword(data: PasswordDto) {
+    const captcha = await this.redisService.get(
+      `reset_password_captcha_${data.email}`,
+    );
+    if (!captcha) {
+      throw new ApiException(10002);
+    }
+
+    if (captcha !== data.captcha) {
+      throw new ApiException(10003);
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: { email: data.email },
+    });
+
+    user.password = md5(data.password);
+
+    try {
+      await this.prisma.user.update({
+        data: user,
+        where: { email: data.email },
+      });
       return 'success';
     } catch (error) {
       this.logger.error(error, UserService);

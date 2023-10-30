@@ -50,7 +50,7 @@ export class UserController {
   @Authorize()
   async login(@Body() loginDto: LoginDto): Promise<LoginVo> {
     const vo = await this.userService.login(loginDto, false);
-    vo.aceessToken = this.jwtService.sign(
+    vo.accessToken = this.jwtService.sign(
       {
         userId: vo.userInfo.id,
         userName: vo.userInfo.userName,
@@ -85,7 +85,7 @@ export class UserController {
       const data = this.jwtService.verify(token);
 
       const user = await this.userService.findUserInfoById(data.userId);
-      const aceessToken = this.jwtService.sign(
+      const accessToken = this.jwtService.sign(
         {
           userId: user.id,
           userName: user.userName,
@@ -107,7 +107,7 @@ export class UserController {
         },
       );
       return {
-        aceessToken,
+        accessToken,
         refreshToken,
       };
     } catch (error) {
@@ -121,7 +121,7 @@ export class UserController {
   @Authorize()
   async adminLogin(@Body() loginDto: LoginDto): Promise<LoginVo> {
     const vo = await this.userService.login(loginDto, true);
-    vo.aceessToken = this.jwtService.sign(
+    vo.accessToken = this.jwtService.sign(
       {
         userId: vo.userInfo.id,
         userName: vo.userInfo.userName,
@@ -158,7 +158,7 @@ export class UserController {
       const data = this.jwtService.verify(token);
 
       const user = await this.userService.findUserInfoById(data.userId);
-      const aceessToken = this.jwtService.sign(
+      const accessToken = this.jwtService.sign(
         {
           userId: user.id,
           userName: user.userName,
@@ -180,7 +180,7 @@ export class UserController {
         },
       );
       return {
-        aceessToken,
+        accessToken,
         refreshToken,
       };
     } catch (error) {
@@ -202,6 +202,12 @@ export class UserController {
     @UserInfo('userId') userId: number,
   ): Promise<string> {
     return await this.userService.updatePassword(userId, passwordDto);
+  }
+
+  @Authorize()
+  @Post('resetPassword')
+  async resetPassword(@Body() resetPswDto: PasswordDto) {
+    return await this.userService.resetPassword(resetPswDto);
   }
 
   @ApiBody({ type: UpdateUserDto })
