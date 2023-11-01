@@ -14,11 +14,13 @@ import { PostInterceptor } from './common/interceptors/post.interceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { InvokeRecordInterceptor } from './common/interceptors/invoke-record.interceptor';
 import { ApiExceptionFilter } from './common/filters/api-exception.filter';
+import { PayloadTooLargeFilter } from './common/filters/payload-too-large.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
   app.useStaticAssets(join(__dirname, '..', 'public'), { prefix: '/static' });
+  app.useStaticAssets('uploads', { prefix: '/uploads' });
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -40,7 +42,7 @@ async function bootstrap() {
     new PostInterceptor(),
     new InvokeRecordInterceptor(),
   );
-  app.useGlobalFilters(new ApiExceptionFilter());
+  app.useGlobalFilters(new ApiExceptionFilter(), new PayloadTooLargeFilter());
   const configService = app.get(ConfigService);
   const config = new DocumentBuilder()
     .setTitle('meeting_room_system API')

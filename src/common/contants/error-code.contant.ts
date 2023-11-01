@@ -19,6 +19,8 @@ export const ErrorCodeMap = {
   20001: '当前创建的文件或目录已存在',
   20002: '无需操作',
   20003: '已超出支持的最大处理数量',
+  20004: '不支持上传该文件格式',
+  20005: '文件大小超出范围',
 } as const;
 
 export type ErrorCodeMapType = keyof typeof ErrorCodeMap;

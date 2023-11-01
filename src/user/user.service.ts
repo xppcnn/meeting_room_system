@@ -266,4 +266,44 @@ export class UserService {
       total,
     };
   }
+  async changeNickName(userId: number, name: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      throw new ApiException(10005);
+    }
+    user.nickName = name;
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: user,
+      });
+    } catch (error) {
+      this.logger.error(error, UserService);
+    }
+  }
+
+  async uploadAvatar(path: string, userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      throw new ApiException(10005);
+    }
+    user.headPic = path;
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: user,
+      });
+      return path;
+    } catch (error) {
+      this.logger.error(error, UserService);
+    }
+  }
 }

@@ -7,6 +7,8 @@ import {
   Query,
   Put,
   ParseIntPipe,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user.service';
@@ -16,7 +18,7 @@ import { LoginDto, PasswordDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { Authorize, Pagination } from 'src/common/decorators/common.decorator';
 import { UserInfo } from 'src/common/decorators/user.decorator';
-import { UpdateUserDto } from './dto/user.dto';
+import { NickNameDto, UpdateUserDto } from './dto/user.dto';
 import { ApiException } from 'src/common/exceptions/api.exception';
 import {
   PaginatedResponseDto,
@@ -24,6 +26,9 @@ import {
 } from 'src/common/contants/common.contant';
 import { UserDetailVo } from './vo/user.vo';
 import { LoginVo, RefreshTokenVo } from './vo/login.vo';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as path from 'path';
+import { storage } from 'src/utils/fileUtils';
 
 @Controller('user')
 @ApiTags('user')
@@ -277,5 +282,42 @@ export class UserController {
       ...page,
       ...parmas,
     };
+  }
+
+  @ApiBody({
+    type: NickNameDto,
+  })
+  @Post('change_nick_name')
+  async changeNickName(
+    @UserInfo('userId') userId: number,
+    @Body('nickName') nickName: string,
+  ) {
+    return await this.userService.changeNickName(userId, nickName);
+  }
+
+  @Post('upload_avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      dest: 'uploads',
+      fileFilter: (req, file, callback) => {
+        const extName = path.extname(file.originalname);
+        if (['.png', 'jpg', 'jpeg', 'gif'].includes(extName)) {
+          callback(null, true);
+        } else {
+          callback(new ApiException(20004), false);
+        }
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+      },
+      storage: storage,
+    }),
+  )
+  async uploadAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @UserInfo('userId') userId: number,
+  ) {
+    const path = file.path;
+    return await this.userService.uploadAvatar(path, userId);
   }
 }

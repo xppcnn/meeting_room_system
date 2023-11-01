@@ -10,3 +10,8 @@ export class UpdateUserDto {
   @ApiProperty()
   headPic: string;
 }
+
+export class NickNameDto {
+  @ApiProperty()
+  nickName: string;
+}
